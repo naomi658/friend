@@ -1,4 +1,3 @@
--- src/main/resources/schema.sql
 CREATE TABLE friend_requests (
     id UUID PRIMARY KEY,
     from_user_id BIGINT NOT NULL,
