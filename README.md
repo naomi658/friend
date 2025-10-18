@@ -1,7 +1,8 @@
 ## 🧑‍🤝‍🧑 apr-backend-assignment
 안녕하세요. APR 백엔드 직무에 지원한 **이민영**입니다.<br/>
-읽어주심에 감사드리며, 향후 좋은 인연이 되면 좋겠습니다.
+읽어주심에 감사드리며, 향후 좋은 인연이 되면 좋겠습니다.<br/>
 <br/>
+
 ## 🚀 프로젝트 개요
 | **항목** | **내용** |
 |------|------|
@@ -26,6 +27,7 @@ src/<br/>
 │ └── resources/<br/>
 │   ├── application.properties<br/>
 <br/>
+
 ## 🗄️ H2 Database Console
 | 항목 | 값 |
 |------|------|
@@ -66,7 +68,7 @@ Swagger에 헤더, 바디 등 필요한 설정이 사전 등록되어 있습니�
 </details><br/>
 3️⃣ API 테스트 시나리오
 <details open> <summary><b>1. 친구 목록 조회</b></summary>
-**GET** http://127.0.0.1:8008/AprFriend/api/friends?page=0&maxSize=20&sort=approvedAt,desc
+GET http://127.0.0.1:8008/AprFriend/api/friends?page=0&maxSize=20&sort=approvedAt,desc
 
 
 - Header
@@ -74,11 +76,12 @@ Swagger에 헤더, 바디 등 필요한 설정이 사전 등록되어 있습니�
   X-user-Id : 100044737
 
 
-✅ 설명: 승인된 친구 목록을 승인일 기준 내림차순으로 조회합니다.<br/>
+> 승인된(`APPROVED`) 친구 목록을 승인일 기준 내림차순으로 조회합니다.<br/>
+> `Pageable` 기반으로 페이징 처리를 적용하여 대규모 데이터 조회 시 효율을 확보했습니다.<br/>
 
 </details>
 <details> <summary><b>2. 받은 친구 신청 목록 조회</b></summary>
-**GET** http://127.0.0.1:8008/AprFriend/api/friends/requests?maxSize=20&window=1d&sort=requestedAt,desc
+GET http://127.0.0.1:8008/AprFriend/api/friends/requests?maxSize=20&window=1d&sort=requestedAt,desc
 
 
 - Header
@@ -86,11 +89,12 @@ Swagger에 헤더, 바디 등 필요한 설정이 사전 등록되어 있습니�
   X-user-Id : 100044737
 
 
-✅ 설명: 최근 하루(window=1d) 내 받은 친구 신청 목록을 조회합니다.<br/>
+> 최근 일정 기간(`window` 파라미터: 1d, 7d, 30d, 90d, over)에 받은 요청을 조회합니다.<br/>
+> `window` 값에 따라 조회 기간을 동적으로 계산하였습니다.(`OffsetDateTime.minusDays` 활용)<br/>
 
 </details>
 <details> <summary><b>3. 친구 신청 보내기</b></summary>
-**POST** http://127.0.0.1:8008/AprFriend/api/friends/request
+POST http://127.0.0.1:8008/AprFriend/api/friends/request
 
 
 - Header
@@ -105,11 +109,13 @@ Swagger에 헤더, 바디 등 필요한 설정이 사전 등록되어 있습니�
   }
 
 
-✅ 설명: userId=20 사용자가 userId=100044737에게 친구 신청을 요청합니다.<br/>
+> 자기 자신에게는 요청할 수 없습니다.<br/>
+> 이미 **대기 중(PENDING)** 상태의 요청이 존재하면 **중복 신청 방지** 예외처리를 하였습니다.<br/>
+> 요청 정보는 `OffsetDateTime.now(ZoneOffset.UTC)` 기준으로 기록하여 서버 지역과 관계없이 **UTC 시간 일관성**을 유지합니다.<br/>
 
 </details>
 <details> <summary><b>4. 친구 신청 승인</b></summary>
-**POST** http://127.0.0.1:8008/AprFriend/api/friends/accept/{requestId}
+POST http://127.0.0.1:8008/AprFriend/api/friends/accept/{requestId}
 
 
 - Header
@@ -122,11 +128,13 @@ Swagger에 헤더, 바디 등 필요한 설정이 사전 등록되어 있습니�
   {requestId} = 2번에서 조회한 requestId 값
 
 
-✅ 설명: 요청받은 친구 신청을 승인합니다.<br/>
+> 승인 권한은 요청을 받은 사용자(`toUserId`)만 가집니다.<br/>
+> 친구 수가 10,000명을 초과하면 `400 BAD_REQUEST` 반환합니다.<br/>
+> 승인 시 `APPROVED` 상태로 변경 후 `approvedAt`에 승인 일시를 기록합니다.<br/>
 
 </details>
 <details> <summary><b>5. 친구 신청 거절</b></summary>
-**POST** http://127.0.0.1:8008/AprFriend/api/friends/reject/{requestId}
+POST http://127.0.0.1:8008/AprFriend/api/friends/reject/{requestId}
 
 
 - Header
@@ -139,7 +147,8 @@ Swagger에 헤더, 바디 등 필요한 설정이 사전 등록되어 있습니�
   {requestId} = 2번에서 조회한 requestId 값
 
 
-✅ 설명: 요청받은 친구 신청을 거절합니다.<br/>
+> 승인과 동일하게, 요청받은 사용자만 거절할 수 있습니다.<br/>
+> 거절 시 해당 요청 레코드를 삭제합니다.<br/>
 
 </details>
 <br/>
